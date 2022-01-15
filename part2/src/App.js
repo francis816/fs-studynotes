@@ -1,11 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Note from './components/Note'
+import Axios from 'axios'
+import axios from 'axios'
 
-
-const App = (props) => {
-  const [allNotes, setAllNotes] = useState(props.notes)
+const App = () => {
+  const [allNotes, setAllNotes] = useState([])
   const [newNote, setNewNote] = useState('a new note...')
   const [showAll, setShowAll] = useState(true)
+
+  // run the funtion below, it will print 'render 0 notes' b4 'effect', 'promise fulfilled', 'render 3 notes'
+  // bc it takes time to fetch data
+  useEffect(() => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/notes')
+      .then(response => {
+        console.log('promise fulfilled')
+        // note = response.data, note.content = response.data.content
+        // response is the obj we got back from server
+        // a call to the state-updating function -> trggiers the re-rendering of the component
+        setAllNotes(response.data)
+      })
+    // by default, effect runs after every render.
+    // E.g. you have an onclick event button and an effect function to console log something
+    // every time you click the button (render), it will console log everytime
+  }, [])
+
+  console.log('render', allNotes.length, 'notes')
 
   const addNote = (event) => {
     event.preventDefault()
