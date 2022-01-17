@@ -1,47 +1,39 @@
 import React, { useState, useEffect } from 'react'
 import Note from './components/Note'
-import Axios from 'axios'
-import axios from 'axios'
+import noteService from './services/notes'
 
 const App = () => {
-  const [allNotes, setAllNotes] = useState([])
+  const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('a new note...')
   const [showAll, setShowAll] = useState(true)
 
-  // run the funtion below, it will print 'render 0 notes' b4 'effect', 'promise fulfilled', 'render 3 notes'
-  // bc it takes time to fetch data
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/notes')
-      .then(response => {
+    // changed axios to noteService, bc we now import from noteService
+    noteService
+      .getAll()
+      .then(initialNotes => {
         console.log('promise fulfilled')
-        // note = response.data, note.content = response.data.content
-        // response is the obj we got back from server
-        // a call to the state-updating function -> trggiers the re-rendering of the component
-        setAllNotes(response.data)
+        setNotes(initialNotes)
       })
-    // by default, effect runs after every render.
-    // E.g. you have an onclick event button and an effect function to console log something
-    // every time you click the button (render), it will console log everytime
   }, [])
-
-  console.log('render', allNotes.length, 'notes')
+  console.log('render', notes.length, 'notes')
 
   const addNote = (event) => {
     event.preventDefault()
-    //event = the mouse click
-    // event.target = the HTML form tag
 
     const noteObject = {
       content: newNote,
       date: new Date().toISOString(),
       important: Math.random() < 0.5,
-      id: allNotes.length + 1,
     }
-
-    setAllNotes(allNotes.concat(noteObject))
-    setNewNote('')
+    // changed axios to noteService, bc we now import from noteService
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
+      })
   }
 
   const handleNoteChange = (event) => {
@@ -52,10 +44,32 @@ const App = () => {
   }
 
   const notesToShow = showAll
-    // same as showAll? allNotes : allNotes.filter...
-    // if showAll = true, return allNotes, else return allNotes.filter...
-    ? allNotes
-    : allNotes.filter(note => note.important === true)
+    ? notes
+    : notes.filter(note => note.important === true)
+
+  const toggleImportanceOf = (id) => {
+    const url = `http:localhost:3001/notes/${id}`
+    // find the note whose id matches id param
+    const note = notes.find(n => n.id === id)
+    // copy the note, except its 'important' prperty, we will toggle it instead
+    const changedNote = { ...note, important: !note.important }
+    // use put method to modify entire array
+    noteService
+      .update(id, changedNote)
+      .then(returnedNote => {
+        // loop through each note, if note id doesn't match id param, aka not the note we want, we just copy the old version
+        // if we find the note we want, we changed note info according to server's data, aka update 'important' property
+        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+      })
+      .catch(error => {
+        alert(
+          `note note '${note.content}' was already deleted from server`
+        )
+        // filter out the note that's not existed in the server
+        setNotes(notes.filter(n => n.id !== id))
+      })
+  }
+
 
   return (
     <>
@@ -68,8 +82,8 @@ const App = () => {
         </button>
       </>
       <ul>
-        {notesToShow.map(note =>
-          <Note key={note.id} content={note.content} />
+        {notesToShow.map((note, i) =>
+          <Note key={i} note={note} toggleImportance={() => toggleImportanceOf(note.id)} />
         )}
       </ul>
       <form onSubmit={addNote}>
