@@ -1,11 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import Note from './components/Note'
 import noteService from './services/notes'
+import Notification from './components/Notification'
+
+const Footer = () => {
+  const footerStyle = {
+    color: 'springgreen',
+    fontStyle: 'italic',
+    fontSize: 16
+  }
+  return (
+    <div style={footerStyle}>
+      <br />
+      <em>Note app, Department of Computer Science, University of Helsinki 2021</em>
+    </div>
+  )
+}
+
 
 const App = () => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('a new note...')
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('some error happened ...')
 
   useEffect(() => {
     console.log('effect')
@@ -62,9 +79,13 @@ const App = () => {
         setNotes(notes.map(note => note.id !== id ? note : returnedNote))
       })
       .catch(error => {
-        alert(
-          `note note '${note.content}' was already deleted from server`
+        setErrorMessage(
+          `Note '${note.content}' was already deleted from server`
         )
+        // set the errorMessage state to null after five seconds.
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
         // filter out the note that's not existed in the server
         setNotes(notes.filter(n => n.id !== id))
       })
@@ -74,6 +95,7 @@ const App = () => {
   return (
     <>
       <h1>Notes</h1>
+      <Notification message={errorMessage} />
       <>
         {/*The event handler switches the value of showAll from true to false and vice versa: */}
         <button onClick={() => setShowAll(!showAll)}>
@@ -91,6 +113,7 @@ const App = () => {
         <input value={newNote} onChange={handleNoteChange} />
         <button type="submit">save</button>
       </form>
+      <Footer />
     </>
   )
 }
