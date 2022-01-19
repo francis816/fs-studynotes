@@ -48,7 +48,8 @@ app.get('/api/notes/:id', (request, response) => {
         // we end them a page with the specific note in json format
         response.json(note)
     } else {
-        //e.g. out of length, set code to 404, end without sending any data        
+        //e.g. out of length, set code to 404, end without sending any data
+        // otherise, the page will just be loading forever
         response.status(404).end()
     }
 })
