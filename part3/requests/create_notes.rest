@@ -1,0 +1,12 @@
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+// you cannot add an empty line between POST and Content-Type above
+
+{
+    "content" :  "hihi",
+    "important" : true
+}
+
+//mutiple requests using ###
+###
+GET http://localhost:3001/api/notes
