@@ -1,9 +1,24 @@
 const express = require('express')
 const app = express()
+const cors = require('cors')
 
+
+app.use(express.static('build'))
+
+// able to deal with different origin. e.g. frontend react = 3000, backend = 3001
+app.use(cors())
 
 // activate json parser
 app.use(express.json())
+
+const requestLogger = (request, response, next) => {
+    console.log("Method:", request.method);
+    console.log("Path:  ", request.path);
+    console.log("Body:  ", request.body);
+    console.log("---");
+    next();
+};
+app.use(requestLogger);
 
 let notes = [
     {
@@ -48,8 +63,7 @@ app.get('/api/notes/:id', (request, response) => {
         // we end them a page with the specific note in json format
         response.json(note)
     } else {
-        //e.g. out of length, set code to 404, end without sending any data
-        // otherise, the page will just be loading forever
+        //e.g. out of length, set code to 404, end without sending any data        
         response.status(404).end()
     }
 })
@@ -93,7 +107,8 @@ app.post('/api/notes', (request, response) => {
     response.json(note)
 })
 
-const PORT = 3001
+// dynamic port for Heroku or 3001 if former is not defined
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
