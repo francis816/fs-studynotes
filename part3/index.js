@@ -5,15 +5,6 @@ const cors = require('cors')
 // so Note = module.exports = mongoose.model("Note", noteSchema)
 const Note = require('./models/note')
 
-
-app.use(express.static('build'))
-
-// able to deal with different origin. e.g. frontend react = 3000, backend = 3001
-app.use(cors())
-
-// activate json parser
-app.use(express.json())
-
 const requestLogger = (request, response, next) => {
     console.log("Method:", request.method);
     console.log("Path:  ", request.path);
@@ -21,6 +12,13 @@ const requestLogger = (request, response, next) => {
     console.log("---");
     next();
 };
+
+
+app.use(express.static('build'))
+// able to deal with different origin. e.g. frontend react = 3000, backend = 3001
+app.use(cors())
+// activate json parser
+app.use(express.json())
 app.use(requestLogger);
 
 let notes = [
@@ -57,35 +55,31 @@ app.get('/api/notes', (request, response) => {
 
 })
 
-app.get('/api/notes/:id', (request, response) => {
-    // // when clients request a specific note page, we try to find the specific note page according to its id
-    // // convert string to number
-    // const id = Number(request.params.id)
-    // // we try to find the note by matching the id from client with the id from our server that contains the note
-    // const note = notes.find(note => {
-    //     return note.id === id
-    // })
-    // if (note) {
-    //     // we end them a page with the specific note in json format
-    //     response.json(note)
-    // } else {
-    //     //e.g. out of length, set code to 404, end without sending any data        
-    //     response.status(404).end()
-    // }
-
-
-    // above = get notes server,
+app.get('/api/notes/:id', (request, response, next) => {
     // now we connect to db, Mongoose's findById method
-    Note.findById(request.params.id).then(note => {
-        response.json(note)
-    })
+    Note.findById(request.params.id)
+        .then(note => {
+            if (note) {
+                response.json(note)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
-app.delete('/api/notes/:id', (request, response) => {
-    const id = Number(request.params.id)
-    notes = notes.filter(note => note.id !== id)
 
-    response.status(204).end()
+app.delete('/api/notes/:id', (request, response) => {
+    // const id = Number(request.params.id)
+    // notes = notes.filter(note => note.id !== id)
+    // response.status(204).end()
+
+    // connect to db
+    Note.findByIdAndRemove(request.params.id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
 
@@ -121,6 +115,37 @@ app.post('/api/notes', (request, response) => {
         response.json(note)
     })
 })
+
+app.put('/api/notes/:id', (request, response, next) => {
+    const body = request.body
+
+    const note = {
+        content: body.content,
+        important: body.important,
+    }
+    //  By default, the updatedNote parameter of the event handler receives the original document without the modifications.
+    //  We added the optional { new: true } parameter, which will cause our event handler to be called with the new modified document instead of the original.
+    Note.findByIdAndUpdate(request.params.id, note, { new: true })
+        .then(updatedNote => {
+            response.json(updatedNote)
+        })
+        .catch(error => next(error))
+})
+
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+    next(error)
+}
+app.use(errorHandler)
 
 // dynamic port for Heroku or according to .env flie, otherwise 3001 if former is not defined
 const PORT = process.env.PORT || 3001
