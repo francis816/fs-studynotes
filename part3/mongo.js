@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
 if (process.argv.length < 3) {
-    console.log('Please provide the password as an argument: node mongo.js <password>')
-    process.exit(1)
+  console.log('Please provide the password as an argument: node mongo.js <password>')
+  process.exit(1)
 }
 
 // pass in as the 3rd param on command line
@@ -15,9 +15,9 @@ const url =
 mongoose.connect(url)
 
 const noteSchema = new mongoose.Schema({
-    content: String,
-    date: Date,
-    important: Boolean,
+  content: String,
+  date: Date,
+  important: Boolean,
 })
 
 const Note = mongoose.model('Note', noteSchema)
@@ -39,8 +39,8 @@ const Note = mongoose.model('Note', noteSchema)
 // getting notes
 // if you just want to get notes are important, put important: true inside {}
 Note.find({}).then(result => {
-    result.forEach(note => {
-        console.log(note)
-    })
-    mongoose.connection.close()
+  result.forEach(note => {
+    console.log(note)
+  })
+  mongoose.connection.close()
 })
