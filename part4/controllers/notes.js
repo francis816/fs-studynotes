@@ -36,7 +36,6 @@ notesRouter.post('/', (request, response, next) => {
         content: body.content,
         important: body.important || false,
         date: new Date(),
-        id: generateId(),
     })
 
     note
