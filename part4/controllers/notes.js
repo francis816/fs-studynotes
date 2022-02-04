@@ -69,7 +69,9 @@ notesRouter.put('/:id', (request, response, next) => {
         content: body.content,
         important: body.important,
     }
-
+    
+    //By default, the updatedNote parameter of the event handler receives the original document without the modifications. 
+    //We added the optional { new: true }parameter, which will cause our event handler to be called with the new modified document instead of the original.
     Note.findByIdAndUpdate(request.params.id, note, { new: true })
         .then(updatedNote => {
             response.json(updatedNote)
