@@ -39,6 +39,10 @@ notesRouter.delete('/:id', async (request, response) => {
 notesRouter.post('/', async (request, response, next) => {
     const body = request.body
 
+    if (!body.content) {
+        return response.status(400).end()
+    }
+
     const note = new Note({
         content: body.content,
         important: body.important || false,
@@ -54,7 +58,7 @@ notesRouter.post('/', async (request, response, next) => {
 
     // same as above thanks to the async error library
     const savedNote = await note.save()
-    response.json(savedNote)
+    response.status(201).json(savedNote)
 
 })
 
