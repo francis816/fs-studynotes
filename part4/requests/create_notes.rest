@@ -1,0 +1,39 @@
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+// you cannot add an empty line between POST and Content-Type above
+
+{
+    "content": "async/await simplifies making async calls",
+    "important": true
+}
+
+
+
+//mutiple requests using ###
+###
+GET http://localhost:3001/api/notes
+
+
+###
+DELETE  http://localhost:3001/api/notes/61ef09f101a782b04c3099e6
+
+###
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "debugging is fun!",
+    "important": true,
+    "userId": "62018b6c8619ad973e3685e4"
+}
+
+
+###
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "debugging is very fun!",
+    "important": true,
+    "userId": "62018b6c8619ad973e3685e4"
+}
