@@ -50,7 +50,8 @@ describe('viewing a specific note', () => {
 
         const noteToView = notesAtStart[0]
 
-        // call the actual operation being tested according to the id of the note fetched from the database
+        // call the actual operation being tested according to the id of 
+        //the note fetched from the database
         const resultNote = await api
             .get(`/api/notes/${noteToView.id}`)
             .expect(200)
